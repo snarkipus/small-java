@@ -1,8 +1,0 @@
-{
-    "preset": "ts-jest",
-    "roots": [
-        "<rootDir>/src/test"
-    ],
-    "testEnvironment": "node",
-    "setupFilesAfterEnv": ["jest-expect-message"]
-}

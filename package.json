@@ -41,7 +41,9 @@
         "lint": "eslint src --ext ts",
         "langium:generate": "langium generate",
         "langium:watch": "langium generate --watch",
-        "test": "jest --collect-coverage"
+        "test": "vitest",
+        "coverage": "vitest --coverage",
+        "test-ui": "vitest --ui"
     },
     "dependencies": {
         "chevrotain": "^9.1.0",

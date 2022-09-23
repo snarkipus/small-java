@@ -3,10 +3,10 @@
  * DO NOT EDIT MANUALLY!
  ******************************************************************************/
 
-import { loadGrammar, Grammar } from 'langium';
+import { loadGrammarFromJson, Grammar } from 'langium';
 
 let loadedSmallJavaGrammar: Grammar | undefined;
-export const SmallJavaGrammar = (): Grammar => loadedSmallJavaGrammar ||(loadedSmallJavaGrammar = loadGrammar(`{
+export const SmallJavaGrammar = (): Grammar => loadedSmallJavaGrammar ?? (loadedSmallJavaGrammar = loadGrammarFromJson(`{
   "$type": "Grammar",
   "isDeclared": true,
   "name": "SmallJava",

@@ -73,7 +73,7 @@ describe('Small Java Validator: Method Invocation on Field', () => {
         expectError(validationResult, "Method invocation on a field",
         {
             offset: mark,
-            length: 2
+            length: 1
         });
     });
 });
@@ -98,7 +98,7 @@ describe('Small Java Validator: Field Selection on a Method', () => {
         expectError(validationResult, "Field selection on a method",
         {
             offset: mark,
-            length: 2
+            length: 1
         });
     });
 });
@@ -450,7 +450,7 @@ function assertDuplicate(input: string, type: SmallJavaAstType, desc: string, na
         'Duplicate ' + desc + ' "' + name + '"',
         {
             offset: headMark,
-            length: name.length + 1
+            length: name.length
         }
     )
     expectError(
@@ -458,7 +458,7 @@ function assertDuplicate(input: string, type: SmallJavaAstType, desc: string, na
         'Duplicate ' + desc + ' "' + name + '"',
         {
             offset: tailMark,
-            length: name.length + 1
+            length: name.length
         }
     )
 }
