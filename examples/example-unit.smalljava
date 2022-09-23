@@ -1,0 +1,9 @@
+class C {
+    A f;
+    A m(A p) {
+        A v = null;
+        return null;
+    }
+}
+
+class A {}

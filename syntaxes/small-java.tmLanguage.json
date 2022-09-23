@@ -1,0 +1,57 @@
+{
+  "name": "small-java",
+  "scopeName": "source.small-java",
+  "fileTypes": [
+    ".smalljava"
+  ],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "keyword.control.small-java",
+      "match": "\\b(class|else|extends|false|if|new|null|return|super|this|true)\\b"
+    },
+    {
+      "name": "string.quoted.double.small-java",
+      "begin": "\"",
+      "end": "\""
+    },
+    {
+      "name": "string.quoted.single.small-java",
+      "begin": "'",
+      "end": "'"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.small-java",
+          "begin": "/\\*",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.small-java"
+            }
+          },
+          "end": "\\*/",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.small-java"
+            }
+          }
+        },
+        {
+          "begin": "//",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.whitespace.comment.leading.small-java"
+            }
+          },
+          "end": "(?=$)",
+          "name": "comment.line.small-java"
+        }
+      ]
+    }
+  }
+}

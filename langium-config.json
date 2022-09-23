@@ -1,0 +1,12 @@
+{
+    "projectName": "SmallJava",
+    "languages": [{
+        "id": "small-java",
+        "grammar": "src/language-server/small-java.langium",
+        "fileExtensions": [".smalljava"],
+        "textMate": {
+            "out": "syntaxes/small-java.tmLanguage.json"
+        }
+    }],
+    "out": "src/language-server/generated"
+}

@@ -1,0 +1,72 @@
+// class A extends C {}
+// class C extends B {}
+// class B extends A {}
+
+// class A {
+//     A f;
+//     A m() {
+//         return this.f();
+//     }
+// }
+
+// class A {
+//     A m() {
+//         return this.m;
+//     }
+// }
+
+// class C {
+//     C m() {
+//         return null;
+//         this.m();  // unreachable code
+//     }
+// }
+
+// class C {
+//     C m() {
+//         return null;
+//         C i = null; // error only here
+//         return null;
+//         return null; // no error here
+//     }
+// }
+
+// class C {}
+// class C {}
+
+// class C {
+//     C f;
+//     C f;
+// }
+
+// class C {
+//     C m() { return null; }
+//     C m() { return null; }
+// }
+
+// class C {
+//     C m(C p, C p) { return null; }
+// }
+
+// class C {
+//     C m() {
+//         C v = null;
+//         if (true)
+//             C v = null;
+//         return null;
+//     }
+// }
+
+// class A {}
+
+// class B {
+//     B p() {
+//         return null;
+//     }
+// }
+
+// class C extends B {
+//     C s;
+//     C t;
+// }
+
