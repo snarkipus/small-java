@@ -1,16 +1,19 @@
 grammar SmallJava
 
 entry SJProgram:
-    classes+=SJClass*
+    (classes+=SJClass)*
 ;
 
 SJClass: 
     'class' name=ID ('extends' superClass=[SJClass])? '{'
-        members+=SJMember*
+        (members+=SJMember)*
     '}'
 ;
+// fragment SJTypedDeclaration:
+// 	type=[SJClass] name=ID
+// ;
 
-SJMember infers SJMember:
+SJMember infers SJMember: 
     SJField | SJMethod
 ;
 
@@ -94,6 +97,9 @@ SJTerminalExpression infers SJExpression:
     | {infer SJNew} 'new' type=[SJClass] '(' ')'
     | '(' SJExpression ')'
 ;
+
+QualifiedName returns string:
+    ID ('.' ID)*;
 
 hidden terminal WS: /\s+/;
 terminal ID: /[_a-zA-Z][\w_]*/;

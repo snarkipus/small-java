@@ -2,8 +2,13 @@ import { AstNode, CstNode, DefaultDocumentSymbolProvider, LangiumDocument } from
 import { DocumentSymbol, SymbolKind } from "vscode-languageserver";
 import { isSJMember } from "../language-server/generated/ast";
 import { SmallJavaModeUtil } from "../util/small-java-model-util";
+import { SmallJavaServices } from "./small-java-module";
 
 export class SmallJavaDocumentSymbolProvider extends DefaultDocumentSymbolProvider {
+
+    constructor(services: SmallJavaServices) {
+        super(services);
+    }
 
     protected getSymbol(document: LangiumDocument, astNode: AstNode): DocumentSymbol[] {
         const node = astNode.$cstNode;

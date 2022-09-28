@@ -7,6 +7,8 @@
 /* eslint-disable @typescript-eslint/no-empty-interface */
 import { AstNode, AstReflection, Reference, ReferenceInfo, isAstNode, TypeMetaData } from 'langium';
 
+export type QualifiedName = string;
+
 export type SJExpression = SJAssignment | SJBoolConstant | SJIntConstant | SJMemberSelection | SJNew | SJNull | SJStringConstant | SJSuper | SJSymbolRef | SJThis;
 
 export const SJExpression = 'SJExpression';

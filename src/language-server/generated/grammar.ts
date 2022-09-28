@@ -1103,6 +1103,46 @@ export const SmallJavaGrammar = (): Grammar => loadedSmallJavaGrammar ?? (loaded
       "wildcard": false
     },
     {
+      "$type": "ParserRule",
+      "name": "QualifiedName",
+      "dataType": "string",
+      "definition": {
+        "$type": "Group",
+        "elements": [
+          {
+            "$type": "RuleCall",
+            "rule": {
+              "$refText": "ID"
+            },
+            "arguments": []
+          },
+          {
+            "$type": "Group",
+            "elements": [
+              {
+                "$type": "Keyword",
+                "value": "."
+              },
+              {
+                "$type": "RuleCall",
+                "rule": {
+                  "$refText": "ID"
+                },
+                "arguments": []
+              }
+            ],
+            "cardinality": "*"
+          }
+        ]
+      },
+      "definesHiddenTokens": false,
+      "entry": false,
+      "fragment": false,
+      "hiddenTokens": [],
+      "parameters": [],
+      "wildcard": false
+    },
+    {
       "$type": "TerminalRule",
       "hidden": true,
       "name": "WS",
