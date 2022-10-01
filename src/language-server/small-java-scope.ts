@@ -1,7 +1,7 @@
-import { AstNodeDescription, DefaultScopeComputation, interruptAndCheck, LangiumDocument, LangiumServices, PrecomputedScopes, streamAllContents } from 'langium';
+import { AstNodeDescription, DefaultScopeComputation, getContainerOfType, interruptAndCheck, LangiumDocument, LangiumServices, PrecomputedScopes, streamAllContents } from 'langium';
 import { CancellationToken } from 'vscode-jsonrpc';
 import { SmallJavaNameProvider } from './small-java-naming';
-import { SJProgram, isSJProgram, isSJMember, SJClass, isSJClass, isSJVariableDeclaration, isSJParameter, SJMember } from './generated/ast';
+import { SJProgram, isSJProgram, isSJMember, SJClass, isSJClass, isSJVariableDeclaration, isSJParameter, isSJNamedElement, isSJMethod, isSJBlock } from './generated/ast';
 export class SmallJavaScopeComputation extends DefaultScopeComputation {
 
     constructor(services: LangiumServices) {
@@ -19,15 +19,23 @@ export class SmallJavaScopeComputation extends DefaultScopeComputation {
         const descr: AstNodeDescription[] = [];
         for (const modelNode of streamAllContents(document.parseResult.value)) {
             await interruptAndCheck(cancelToken);
-            if (isSJClass(modelNode)||isSJMember(modelNode)||isSJVariableDeclaration(modelNode)||isSJParameter(modelNode)) {
-                let name = this.nameProvider.getName(modelNode);//?
+            if (isSJNamedElement(modelNode)) {
+                let name = this.nameProvider.getName(modelNode);
                 if (name) {
                     if (isSJClass(modelNode.$container)) {
                         name = (this.nameProvider as SmallJavaNameProvider).getQualifiedName(modelNode.$container as SJClass, name);
-                    } else if (isSJMember(modelNode.$container)) {
-                        name = (this.nameProvider as SmallJavaNameProvider).getQualifiedName(modelNode.$container as SJMember, name);
+                    } else if (isSJMethod(modelNode.$container)) {
+                        if (isSJParameter(modelNode)) {
+                            name = (this.nameProvider as SmallJavaNameProvider).getQualifiedName(getContainerOfType(modelNode, isSJMethod)!.name, name);
+                            name = (this.nameProvider as SmallJavaNameProvider).getQualifiedName(getContainerOfType(modelNode, isSJClass)!.name, name);
+                        }
+                    } else if (isSJBlock(modelNode.$container)) {
+                        if (isSJVariableDeclaration(modelNode)) {
+                            name = (this.nameProvider as SmallJavaNameProvider).getQualifiedName(getContainerOfType(modelNode, isSJMethod)!.name, name);
+                            name = (this.nameProvider as SmallJavaNameProvider).getQualifiedName(getContainerOfType(modelNode, isSJClass)!.name, name);
+                        }
                     }
-                    descr.push(this.descriptions.createDescription(modelNode, name, document));
+                    descr.push(this.descriptions.createDescription(modelNode, name/*? */, document));
                 }
             }
         }
