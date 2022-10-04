@@ -1,8 +1,9 @@
 import { AstNode, AstNodeDescription, EmptyFileSystem, LangiumDocument } from "langium";
-import { parseDocument } from "langium/test";
+import { parseDocument, expectCompletion } from "langium/test";
+// import { SJMethod, SJProgram, SJReturn } from "../language-server/generated/ast";
 import { createSmallJavaServices } from "../language-server/small-java-module";
 
-const services = createSmallJavaServices(EmptyFileSystem).SmallJava;
+
 /**
  * Expected output:
  *  C     <-- class     (SJClass)
@@ -14,6 +15,8 @@ const services = createSmallJavaServices(EmptyFileSystem).SmallJava;
  */
 describe('Small Java Index: Qualified Names', async () => {
     
+    const services = createSmallJavaServices(EmptyFileSystem).SmallJava;
+
     let testDoc : LangiumDocument<AstNode>;
     let exports : AstNodeDescription[];
     let computedNames : string;
@@ -24,15 +27,15 @@ describe('Small Java Index: Qualified Names', async () => {
         class C {
                 A f;
                 A m(A p) {
-                A v = null;
-                return null;
+                    A v = null;
+                    return null;
                 }
             }
         class A {}
         `;
 
         testDoc = await parseDocument(services, text);
-         exports = await services.references.ScopeComputation.computeExports(testDoc);/*? $.length*/
+        exports = await services.references.ScopeComputation.computeExports(testDoc);
         computedNames = exports.map(e => e.name).join(', ');
     });
 
@@ -41,3 +44,34 @@ describe('Small Java Index: Qualified Names', async () => {
     });
 
 });
+
+describe('Does magical scoping things', () => {
+
+    const services = createSmallJavaServices(EmptyFileSystem).SmallJava;
+    const completion = expectCompletion(services);
+    let text : string;
+
+    beforeAll(async () => {
+        text=`
+        class C {
+                A f;
+                A m(A p) {
+                    A v = null;
+                    return <|>;
+                }
+            }
+        class A {}
+        `;
+    });
+
+    test('magical things should be magical', async () => {
+        await completion({
+            text,
+            index: 0,
+            expectedItems: [
+                'v','p','C.m.p','C.m.v','true','false','this','super','null','new'
+            ]
+        });
+    });
+
+})

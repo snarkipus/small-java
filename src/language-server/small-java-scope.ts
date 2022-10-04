@@ -35,7 +35,7 @@ export class SmallJavaScopeComputation extends DefaultScopeComputation {
                             name = (this.nameProvider as SmallJavaNameProvider).getQualifiedName(getContainerOfType(modelNode, isSJClass)!.name, name);
                         }
                     }
-                    descr.push(this.descriptions.createDescription(modelNode, name/*? */, document));
+                    descr.push(this.descriptions.createDescription(modelNode, name, document));
                 }
             }
         }
