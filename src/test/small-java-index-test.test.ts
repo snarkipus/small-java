@@ -1,18 +1,8 @@
-import { AstNode, AstNodeDescription, EmptyFileSystem, LangiumDocument } from "langium";
-import { parseDocument, expectCompletion } from "langium/test";
-// import { SJMethod, SJProgram, SJReturn } from "../language-server/generated/ast";
+import { AstNode, AstNodeDescription, EmptyFileSystem, LangiumDocument, Reference } from "langium";
+import { parseDocument } from "langium/test";
+import { SJMethod, SJProgram, SJReturn } from "../language-server/generated/ast";
 import { createSmallJavaServices } from "../language-server/small-java-module";
 
-
-/**
- * Expected output:
- *  C     <-- class     (SJClass)
- *  C.f   <-- field     (SJMember)
- *  C.m   <-- method    (SJMember)
- *  C.m.p <-- parameter (SJParameter)
- *  C.m.v <-- variable  (SJVariableDeclaration)
- *  A     <-- class     (SJClass)
- */
 describe('Small Java Index: Qualified Names', async () => {
     
     const services = createSmallJavaServices(EmptyFileSystem).SmallJava;
@@ -45,11 +35,13 @@ describe('Small Java Index: Qualified Names', async () => {
 
 });
 
-describe('Does magical scoping things', () => {
+describe('Default Scope Contexts', () => {
 
     const services = createSmallJavaServices(EmptyFileSystem).SmallJava;
-    const completion = expectCompletion(services);
+    let testDoc : LangiumDocument<AstNode>;
     let text : string;
+    let refNode: AstNode;
+    const expectedScopes = ['f, m, C.f, C.m','v, p, C.m.p, C.m.v'];
 
     beforeAll(async () => {
         text=`
@@ -57,21 +49,55 @@ describe('Does magical scoping things', () => {
                 A f;
                 A m(A p) {
                     A v = null;
-                    return <|>;
+                    return null;
                 }
             }
         class A {}
         `;
+
+        testDoc = await parseDocument(services, text);
+        refNode = (((testDoc.parseResult.value as SJProgram)
+                        .classes[0]
+                        .members[1] as SJMethod)
+                        .body
+                        .statements[1] as SJReturn)
+                        .expression;
     });
 
-    test('magical things should be magical', async () => {
-        await completion({
-            text,
-            index: 0,
-            expectedItems: [
-                'v','p','C.m.p','C.m.v','true','false','this','super','null','new'
-            ]
-        });
+    test('case 1: SJMemberSelection:member -> f, m, C.f, C.m', () => {
+        const context = {
+            $type: 'SJMemberSelection',
+            $container: refNode,
+            $containerProperty: 'member'
+        };
+        
+        const refInfo = {
+            reference: {} as Reference,
+            container: context,
+            property: 'member'
+        };
+
+        let tempScope = services.references.ScopeProvider.getScope(refInfo);
+        const computedScope = tempScope.getAllElements().map(e => e.name).join(', ');
+        expect(expectedScopes[0]).toBe(computedScope);
+    });
+
+    test('case 2: SJSymbolRef:symbol -> v, p, C.m.p, C.m.v', () => {
+        const context = {
+            $type: 'SJSymbolRef',
+            $container: refNode,
+            $containerProperty: 'symbol'
+        };
+        
+        const refInfo = {
+            reference: {} as Reference,
+            container: context,
+            property: 'symbol'
+        };
+
+        let tempScope = services.references.ScopeProvider.getScope(refInfo);
+        const computedScope = tempScope.getAllElements().map(e => e.name).join(', ');
+        expect(expectedScopes[1]).toBe(computedScope);
     });
 
 })
