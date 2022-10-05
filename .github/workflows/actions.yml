@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Langium
+    name: Small Java 
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
