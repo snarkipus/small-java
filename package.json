@@ -10,17 +10,26 @@
         "Programming Languages"
     ],
     "contributes": {
-        "languages": [{
-            "id": "small-java",
-            "aliases": ["SmallJava", "small-java"],
-            "extensions": [".smalljava"],
-            "configuration": "./language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "small-java",
-            "scopeName": "source.small-java",
-            "path": "./syntaxes/small-java.tmLanguage.json"
-        }]
+        "languages": [
+            {
+                "id": "small-java",
+                "aliases": [
+                    "SmallJava",
+                    "small-java"
+                ],
+                "extensions": [
+                    ".smalljava"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "small-java",
+                "scopeName": "source.small-java",
+                "path": "./syntaxes/small-java.tmLanguage.json"
+            }
+        ]
     },
     "activationEvents": [
         "onLanguage:small-java"
