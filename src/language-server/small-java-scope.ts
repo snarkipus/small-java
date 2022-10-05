@@ -1,7 +1,7 @@
 import { AstNode, AstNodeDescription, DefaultScopeComputation, getContainerOfType, interruptAndCheck, LangiumDocument, LangiumServices, MultiMap, PrecomputedScopes, streamAllContents } from 'langium';
 import { CancellationToken } from 'vscode-jsonrpc';
 import { SmallJavaNameProvider } from './small-java-naming';
-import { SJClass, isSJClass, isSJVariableDeclaration, isSJParameter, isSJNamedElement, SJMethod, isSJMethod, isSJBlock, SJProgram, SJBlock, isSJExpression } from './generated/ast';
+import { SJClass, isSJClass, isSJVariableDeclaration, isSJParameter, isSJNamedElement, SJMethod, isSJMethod, isSJBlock, SJProgram, SJSymbolRef, SJBlock, SJVariableDeclaration } from './generated/ast';
 
 export class SmallJavaScopeComputation extends DefaultScopeComputation {
 
@@ -48,37 +48,51 @@ export class SmallJavaScopeComputation extends DefaultScopeComputation {
         const scopes = new MultiMap<AstNode, AstNodeDescription>();
         for (const node of streamAllContents(program)) {
             await interruptAndCheck(cancelToken);
-            this.processContainer(node, scopes, document);
+            switch (node.$type) {
+                case 'SJSymbolRef':
+                    this.scopeForSymbolRef(node as SJSymbolRef, document, scopes);
+                
+                default:
+                    super.processNode(node, document, scopes);
+            }
         }
-
         return scopes;
     }
 
-    protected processContainer(node: AstNode, scopes: PrecomputedScopes, document: LangiumDocument): void {
+    protected scopeForSymbolRef(node: any, document: LangiumDocument, scopes: PrecomputedScopes): void {
         const container = node.$container;
         if (container) {
             switch (container.$type) {
                 case 'SJMethod':
+                    //<<<Xtext>>>
+                    //
+                    // SJMethod: Scopes.scopeFor(container.params)
                     for (const param of (container as SJMethod).params) {
                         scopes.add(container, this.descriptions.createDescription(param, param.name, document));
                     }
+
                 case 'SJBlock':
+                    //<<<Xtext>>>
+                    //
+                    // 	SJBlock:
+                    // 		Scopes.scopeFor(
+                    // 			container.statements.takeWhile[it != context].filter(SJVariableDeclaration),
+                    // 			scopeForSymbolRef(container) // outer scope
+                    // 		)
                     const statements = (container as SJBlock).statements;
-                    if (statements) {
-                        for (const statement of (container as SJBlock).statements.filter(isSJExpression)) {
-                            const name = this.nameProvider.getName(statement);
-                            if (name) {
-                                scopes.add(container, this.descriptions.createDescription(statement, name, document));
-                            }
-                        };
+                    if(statements) {
+                        for (const statement of statements) {
+                            isSJVariableDeclaration(statement) ?? scopes.add(
+                                container,
+                                this.descriptions.createDescription(statement, (statement as SJVariableDeclaration).name, document)
+                            );
+                        }
                     }
+                    
                 default: 
-                    const name = this.nameProvider.getName(node);
-                    if (name) {
-                        scopes.add(container, this.descriptions.createDescription(node, name, document));
-                    }
+                    this.scopeForSymbolRef(container, document, scopes);
             }
-        }
+        }      
     }
 
     // protected createQualifiedDescription(cls: SJClass, description: AstNodeDescription, document: LangiumDocument): AstNodeDescription {
@@ -89,3 +103,63 @@ export class SmallJavaScopeComputation extends DefaultScopeComputation {
 
 // }
 }
+
+/**
+ * Xtext Implementation
+ */
+
+//  class SmallJavaScopeProvider extends AbstractSmallJavaScopeProvider {
+
+// 	val epackage = SmallJavaPackage.eINSTANCE
+// 	@Inject extension SmallJavaModelUtil
+// 	@Inject extension SmallJavaTypeComputer
+
+// 	override getScope(EObject context, EReference reference) {
+// 		if (reference == epackage.SJSymbolRef_Symbol) {
+// 			return scopeForSymbolRef(context)
+// 		} else if (context instanceof SJMemberSelection) {
+// 			return scopeForMemberSelection(context)
+// 		}
+// 		return super.getScope(context, reference)
+// 	}
+
+// 	def protected IScope scopeForSymbolRef(EObject context) {
+// 		val container = context.eContainer
+// 		return switch (container) {
+// 			SJMethod:
+// 				Scopes.scopeFor(container.params)
+// 			SJBlock:
+// 				Scopes.scopeFor(
+// 					container.statements.takeWhile[it != context].filter(SJVariableDeclaration),
+// 					scopeForSymbolRef(container) // outer scope
+// 				)
+// 			default:
+// 				scopeForSymbolRef(container)
+// 		}
+// 	}
+
+// 	def protected IScope scopeForMemberSelection(SJMemberSelection sel) {
+// 		val type = sel.receiver.typeFor
+
+// 		if (type === null || type.isPrimitive)
+// 			return IScope.NULLSCOPE
+
+// 		val grouped = type.
+// 			classHierarchyMembers.groupBy[it instanceof SJMethod]
+// 		val inheritedMethods = grouped.get(true) ?: emptyList
+// 		val inheritedFields = grouped.get(false) ?: emptyList
+
+// 		if (sel.methodinvocation) {
+// 			return Scopes.scopeFor(
+// 				type.methods + type.fields,
+// 				Scopes.scopeFor(inheritedMethods + inheritedFields)
+// 			)
+// 		} else {
+// 			return Scopes.scopeFor(
+// 				type.fields + type.methods,
+// 				Scopes.scopeFor(inheritedFields + inheritedMethods)
+// 			)
+// 		}
+// 	}
+
+// }

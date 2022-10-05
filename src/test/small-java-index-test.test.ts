@@ -10,7 +10,6 @@ describe('Small Java Index: Qualified Names', async () => {
     let testDoc : LangiumDocument<AstNode>;
     let exports : AstNodeDescription[];
     let computedNames : string;
-    const expectedNames = 'C, C.f, C.m, C.m.p, C.m.v, A';
 
     beforeAll(async () => {
         const text=`
@@ -30,22 +29,17 @@ describe('Small Java Index: Qualified Names', async () => {
     });
 
     it('Exports Qualified Names', () => {
-        expect(computedNames).toBe(expectedNames);
+        expect(computedNames).toBe('C, C.f, C.m, C.m.p, C.m.v, A');
     });
-
 });
 
 // this breaks with the updates to the scope provider
-describe.skip('Default Scope Contexts', () => {
+describe('Default Scope Contexts', () => {
 
     const services = createSmallJavaServices(EmptyFileSystem).SmallJava;
     let testDoc : LangiumDocument<AstNode>;
     let text : string;
     let refNode: AstNode;
-    const expectedScopes = [
-        'f, m, C.f, C.m',    // ref: SJMemberSelection:member
-        'v, p, C.m.p, C.m.v' // ref: SJSymbolRef:symbol
-    ];
 
     beforeAll(async () => {
         text=`
@@ -71,7 +65,7 @@ describe.skip('Default Scope Contexts', () => {
     it('case 1: SJMemberSelection:member -> f, m, C.f, C.m', () => {
         const context = {
             $type: 'SJMemberSelection',
-            $container: refNode,
+            $container: refNode.$container,
             $containerProperty: 'member'
         };
         
@@ -81,15 +75,15 @@ describe.skip('Default Scope Contexts', () => {
             property: 'member'
         };
 
-        let tempScope = services.references.ScopeProvider.getScope(refInfo);
-        const computedScope = tempScope.getAllElements().map(e => e.name).join(', ');
-        expect(expectedScopes[0]).toBe(computedScope);
+        let scope = services.references.ScopeProvider.getScope(refInfo);
+        const computedScope = scope.getAllElements().map(e => e.name).join(', ');//?
+        expect(computedScope).toBe('f, m, C.f, C.m');
     });
 
     it('case 2: SJSymbolRef:symbol -> v, p, C.m.p, C.m.v', () => {
         const context = {
             $type: 'SJSymbolRef',
-            $container: refNode,
+            $container: refNode.$container,
             $containerProperty: 'symbol'
         };
         
@@ -99,9 +93,8 @@ describe.skip('Default Scope Contexts', () => {
             property: 'symbol'
         };
 
-        let tempScope = services.references.ScopeProvider.getScope(refInfo);
-        const computedScope = tempScope.getAllElements().map(e => e.name).join(', ');
-        expect(expectedScopes[1]).toBe(computedScope);
+        let scope = services.references.ScopeProvider.getScope(refInfo);
+        const computedScope = scope.getAllElements().map(e => e.name).join(', ');//?
+        expect(computedScope).toBe('v, p, C.m.p, C.m.v');
     });
-
 })

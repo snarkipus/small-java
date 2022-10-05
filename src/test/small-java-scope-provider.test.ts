@@ -4,13 +4,14 @@ import { SJBlock, SJIfStatement, SJMethod, SJProgram } from "../language-server/
 import { createSmallJavaServices } from "../language-server/small-java-module";
 
 
-describe.skip('Magical Thing', async () => {
+describe('Magical Thing', async () => {
     
     const services = createSmallJavaServices(EmptyFileSystem).SmallJava;
 
     let testDoc : LangiumDocument<AstNode>;
     let refNode : AstNode;
     let v3Ref : AstNode;
+    let v4Ref : AstNode;
 
     beforeAll(async () => {
         const text=`
@@ -29,32 +30,29 @@ describe.skip('Magical Thing', async () => {
         `;
 
         testDoc = await parseDocument(services, text);
+        
         refNode = ((testDoc.parseResult.value as SJProgram)
-                        .classes[0]
-                        .members[0] as SJMethod)
-                        .body;
+                    .classes[0]
+                    .members[0] as SJMethod)
+                    .body;
 
         v3Ref = (((refNode as SJBlock)
                     .statements[1] as SJIfStatement)
                     .thenBlock)
                     .statements[1];
-        
-        // let testStream = streamAllContents(refNode).find(node => node as AstNode === 'v3');
 
-        // let testStream2 = _.takeWhile(testStream, != v3Ref);
-        //                     .filter(isSJVariableDeclaration)
-        //                     .map(e => e.name);//?
+        v4Ref = (refNode as SJBlock).statements[2];
+    });
 
+    it('Computes SJSymbolRef:SJSymbol scopes for v3 declaration -> v2, v1, p', () => {
 
         // findFirst[name == 'v3']
         //     .expression
         //     .assertScope(SmallJavaPackage.eINSTANCE.SJSymbolRef_Symbol, "v2, v1, p")
-    });
 
-    it('Does Things', () => {
         const context = {
             $type: 'SJSymbolRef',
-            $container: v3Ref,
+            $container: v3Ref.$container,
             $containerProperty: 'symbol'
         };
         
@@ -64,9 +62,32 @@ describe.skip('Magical Thing', async () => {
             property: 'symbol'
         };
 
-        let tempScope = services.references.ScopeProvider.getScope(refInfo);
-        const computedScope = tempScope.getAllElements().map(e => e.name).join(', ');
-        expect('A').toBe(computedScope);
+        let scope = services.references.ScopeProvider.getScope(refInfo);
+        const computedScope = scope.getAllElements().map(e => e.name).join(', ');//? $.length
+        expect(computedScope).toBe('v2, v1, p');
+    });
+
+    it('Computes SJSymbolRef:SJSymbol scopes for v4 declaration -> v1, p', () => {
+        
+        // findFirst[name == 'v4']
+        //     .expression
+        //     .assertScope(SmallJavaPackage.eINSTANCE.SJSymbolRef_Symbol, "v1, p")
+
+        const context = {
+            $type: 'SJSymbolRef',
+            $container: v4Ref.$container,
+            $containerProperty: 'symbol'
+        };
+        
+        const refInfo = {
+            reference: {} as Reference,
+            container: context,
+            property: 'symbol'
+        };
+
+        let scope = services.references.ScopeProvider.getScope(refInfo);
+        const computedScope = scope.getAllElements().map(e => e.name).join(', ');//? $.length
+        expect(computedScope).toBe('v1, p');
     });
 
 });
