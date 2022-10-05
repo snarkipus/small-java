@@ -4,7 +4,7 @@ import { SJBlock, SJIfStatement, SJMethod, SJProgram } from "../language-server/
 import { createSmallJavaServices } from "../language-server/small-java-module";
 
 
-describe('Magical Thing', async () => {
+describe.skip('Magical Thing', async () => {
     
     const services = createSmallJavaServices(EmptyFileSystem).SmallJava;
 

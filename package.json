@@ -63,6 +63,7 @@
         "langium": "0.5.0",
         "lodash": "^4.17.21",
         "regexp-to-ast": "^0.5.0",
+        "vitest": "^0.23.4",
         "vscode-languageclient": "^8.0.2",
         "vscode-languageserver": "^8.0.2",
         "vscode-languageserver-textdocument": "^1.0.7",
