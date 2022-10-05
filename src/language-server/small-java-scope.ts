@@ -1,7 +1,8 @@
-import { AstNodeDescription, DefaultScopeComputation, getContainerOfType, interruptAndCheck, LangiumDocument, LangiumServices, PrecomputedScopes, streamAllContents } from 'langium';
+import { AstNode, AstNodeDescription, DefaultScopeComputation, getContainerOfType, interruptAndCheck, LangiumDocument, LangiumServices, MultiMap, PrecomputedScopes, streamAllContents } from 'langium';
 import { CancellationToken } from 'vscode-jsonrpc';
 import { SmallJavaNameProvider } from './small-java-naming';
-import { SJProgram, isSJProgram, isSJMember, SJClass, isSJClass, isSJVariableDeclaration, isSJParameter, isSJNamedElement, isSJMethod, isSJBlock } from './generated/ast';
+import { SJClass, isSJClass, isSJVariableDeclaration, isSJParameter, isSJNamedElement, SJMethod, isSJMethod, isSJBlock, SJProgram, SJBlock, isSJExpression } from './generated/ast';
+
 export class SmallJavaScopeComputation extends DefaultScopeComputation {
 
     constructor(services: LangiumServices) {
@@ -42,56 +43,49 @@ export class SmallJavaScopeComputation extends DefaultScopeComputation {
         return descr;
     }
 
-    // async computeLocalScopes(document: LangiumDocument, cancelToken = CancellationToken.None): Promise<PrecomputedScopes> {
-    //     const model = document.parseResult.value as SJProgram;
-    //     const scopes = new MultiMap<AstNode, AstNodeDescription>();
-    //     await this.processContainer(model, scopes, document, cancelToken);
-    //     return scopes;
+    async computeLocalScopes(document: LangiumDocument, cancelToken = CancellationToken.None): Promise<PrecomputedScopes> {
+        const program = document.parseResult.value as SJProgram;
+        const scopes = new MultiMap<AstNode, AstNodeDescription>();
+        for (const node of streamAllContents(program)) {
+            await interruptAndCheck(cancelToken);
+            this.processContainer(node, scopes, document);
+        }
+
+        return scopes;
+    }
+
+    protected processContainer(node: AstNode, scopes: PrecomputedScopes, document: LangiumDocument): void {
+        const container = node.$container;
+        if (container) {
+            switch (container.$type) {
+                case 'SJMethod':
+                    for (const param of (container as SJMethod).params) {
+                        scopes.add(container, this.descriptions.createDescription(param, param.name, document));
+                    }
+                case 'SJBlock':
+                    const statements = (container as SJBlock).statements;
+                    if (statements) {
+                        for (const statement of (container as SJBlock).statements.filter(isSJExpression)) {
+                            const name = this.nameProvider.getName(statement);
+                            if (name) {
+                                scopes.add(container, this.descriptions.createDescription(statement, name, document));
+                            }
+                        };
+                    }
+                default: 
+                    const name = this.nameProvider.getName(node);
+                    if (name) {
+                        scopes.add(container, this.descriptions.createDescription(node, name, document));
+                    }
+            }
+        }
+    }
+
+    // protected createQualifiedDescription(cls: SJClass, description: AstNodeDescription, document: LangiumDocument): AstNodeDescription {
+    //     const name = (this.nameProvider as SmallJavaNameProvider).getQualifiedName(cls.name, description.name);
+    //     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    //     return this.descriptions.createDescription(description.node!, name, document);
     // }
 
-    protected async processContainer(container: SJProgram | SJClass, scopes: PrecomputedScopes, document: LangiumDocument, cancelToken: CancellationToken): Promise<AstNodeDescription[]> {
-        const localDescriptions: AstNodeDescription[] = [];
-        
-        if (isSJProgram(container)) {
-            for (const element of container.classes) {
-                await interruptAndCheck(cancelToken);
-                if (isSJMember(element)) {
-                    const description = this.descriptions.createDescription(element, element.name, document);
-                    localDescriptions.push(description);
-                } else if (isSJClass(element)) {
-                    const nestedDescriptions = await this.processContainer(element, scopes, document, cancelToken);
-                    for (const description of nestedDescriptions) {
-                        // Add qualified names to the container
-                        const qualified = this.createQualifiedDescription(element, description, document);
-                        localDescriptions.push(qualified);
-                    }
-                }
-            }
-        }        
-         
-        // for (const element of container.elements) {            
-        //     if (isSJMember(element)) {
-        //         const description = this.descriptions.createDescription(element, element.name, document);
-        //         localDescriptions.push(description);
-        //     } else if (isSJClass(element)) {
-        //         const nestedDescriptions = await this.processContainer(element, scopes, document, cancelToken);
-        //         for (const description of nestedDescriptions) {
-        //             // Add qualified names to the container
-        //             const qualified = this.createQualifiedDescription(element, description, document);
-        //             localDescriptions.push(qualified);
-        //         }
-        //     }
-        // }
-        
-        scopes.addAll(container, localDescriptions);
-        return localDescriptions;
-    }
-
-    protected createQualifiedDescription(cls: SJClass, description: AstNodeDescription, document: LangiumDocument): AstNodeDescription {
-        const name = (this.nameProvider as SmallJavaNameProvider).getQualifiedName(cls.name, description.name);
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return this.descriptions.createDescription(description.node!, name, document);
-    }
-
+// }
 }
- 
