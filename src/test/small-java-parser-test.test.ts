@@ -115,5 +115,3 @@ describe('Small Java Parser', () => {
         }
     }
 });
-
-// file.skip

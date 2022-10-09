@@ -29,6 +29,3 @@ describe('Small Java Type Conformance Test', () => {
     })    
 
 })
-
-
-// file.skip

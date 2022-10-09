@@ -6,7 +6,7 @@ import { SmallJavaGeneratedModule, SmallJavaGeneratedSharedModule } from './gene
 import { SmallJavaValidationRegistry, SmallJavaValidator } from './small-java-validator';
 import { SmallJavaDocumentSymbolProvider } from './small-java-document-symbol-provider';
 import { SmallJavaNameProvider } from './small-java-naming';
-import { SmallJavaScopeComputation } from './small-java-scope';
+import { SmallJavaScopeComputation, SmallJavaScopeProvider } from './small-java-scope';
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -31,7 +31,8 @@ export type SmallJavaServices = LangiumServices & SmallJavaAddedServices
 export const SmallJavaModule: Module<SmallJavaServices, PartialLangiumServices & SmallJavaAddedServices> = {
     references: {
         ScopeComputation: (services) => new SmallJavaScopeComputation(services),
-        NameProvider: () => new SmallJavaNameProvider()
+        NameProvider: () => new SmallJavaNameProvider(),
+        ScopeProvider: (services) => new SmallJavaScopeProvider(services),
     },
     validation: {
         ValidationRegistry: (services) => new SmallJavaValidationRegistry(services),

@@ -33,8 +33,8 @@ describe('Small Java Index: Qualified Names', async () => {
     });
 });
 
-// this breaks with the updates to the scope provider
-describe('Default Scope Contexts', () => {
+// this should break once scoping is updated from the default implementation
+describe('Default Scope Provider', () => {
 
     const services = createSmallJavaServices(EmptyFileSystem).SmallJava;
     let testDoc : LangiumDocument<AstNode>;

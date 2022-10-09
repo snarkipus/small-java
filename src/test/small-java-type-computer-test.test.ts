@@ -87,5 +87,3 @@ async function assertType(testExp: string, expectedClassName: string) {
 function statementExpressionType(s: SJStatement) {
     return SJcompute.typeFor(s as SJExpression);
 }
-
-// file.skip

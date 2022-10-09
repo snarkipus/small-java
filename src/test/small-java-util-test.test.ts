@@ -143,5 +143,3 @@ describe('Small Java Model Utility Class', () => {
         expect(output.join(', ')).toBe(expected);
     }
 })
-
-// file.skip

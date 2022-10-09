@@ -4,7 +4,7 @@ import { SJBlock, SJIfStatement, SJMethod, SJProgram } from "../language-server/
 import { createSmallJavaServices } from "../language-server/small-java-module";
 
 
-describe('Magical Thing', async () => {
+describe('Small Java Scope Provider', async () => {
     
     const services = createSmallJavaServices(EmptyFileSystem).SmallJava;
 
@@ -44,7 +44,7 @@ describe('Magical Thing', async () => {
         v4Ref = (refNode as SJBlock).statements[2];
     });
 
-    it('Computes SJSymbolRef:SJSymbol scopes for v3 declaration -> v2, v1, p', () => {
+    it.only('Computes SJSymbolRef:SJSymbol scopes for v3 declaration -> v2, v1, p', () => {
 
         // findFirst[name == 'v3']
         //     .expression
@@ -52,7 +52,7 @@ describe('Magical Thing', async () => {
 
         const context = {
             $type: 'SJSymbolRef',
-            $container: v3Ref.$container,
+            $container: v3Ref,
             $containerProperty: 'symbol'
         };
         
@@ -75,7 +75,7 @@ describe('Magical Thing', async () => {
 
         const context = {
             $type: 'SJSymbolRef',
-            $container: v4Ref.$container,
+            $container: v4Ref,
             $containerProperty: 'symbol'
         };
         
