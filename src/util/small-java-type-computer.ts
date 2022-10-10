@@ -67,6 +67,7 @@ export class SmallJavaTypeComputer {
         switch(c.$type) {
             case 'SJVariableDeclaration':
                 return (c as SJVariableDeclaration).type.ref;
+
             case 'SJAssignment': {
                 if (f === 'right') {
                     return this.typeFor((c as SJAssignment).left);
@@ -74,8 +75,15 @@ export class SmallJavaTypeComputer {
                     return this.typeFor((c as SJAssignment).right);
                 }
             }
+
             case 'SJReturn':
                 return getContainerOfType(c, isSJMethod)?.type.ref;
+
+            case 'SJIfStatement':
+                    if (f === 'expression') {
+                        return SmallJavaTypeComputer.BOOL_TYPE;
+                    }
+
             case 'SJMemberSelection':
                 if (f === 'args') {
                     try {
@@ -84,15 +92,11 @@ export class SmallJavaTypeComputer {
                                     .params[((c as SJMemberSelection).args.indexOf(e))]
                                     ?.type.ref;
                     } catch (e) {
-                        throw new Warning('Something got here');
                         return undefined;
                     }
                 }
-            case 'SJIfStatement':
-                if (f === 'expression') {
-                    return SmallJavaTypeComputer.BOOL_TYPE;
-                }
-            default: throw new Error('Unknown Type');
+
+            default: return undefined;
         }
     }
 } 

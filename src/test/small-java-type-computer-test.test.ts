@@ -97,7 +97,7 @@ describe('Small Java Type Computer', () => {
                             .expression;
         const type = SJcompute.typeFor(statement);
 
-        expect(SJcompute.isPrimitive(type!)).toBe(true);
+        expect(SJcompute.isPrimitive(type!)).toBeTruthy();
     });
 
     it('Expected Variable Declaration Type', async() => {
@@ -130,11 +130,49 @@ describe('Small Java Type Computer', () => {
         assertExpectedType(exp, 'booleanType');
     });
 
-    it('Expected Method Invocation Types', async () => {
+    it('Expected Method Invocation Argument Types', async () => {
         const text=`this.m(new P1(), new P2())`;
         const exp = ((await testStatements(text))[0] as SJMemberSelection).args;
         assertExpectedType(exp[0], 'P1');
         assertExpectedType(exp[1], 'P2');
+    });
+
+    it('Expected Method Invocation Receiver Types', async () => {
+        const text=`this.m()`;
+        const exp = ((await testStatements(text))[0] as SJMemberSelection).receiver;
+        const type = SJcompute.expectedType(exp);
+        expect(type).toBeUndefined();
+    });
+
+    it('Expected Stand Alone Member Selection Types', async () => {
+        const text=`
+        class A {
+            A a;
+            A m() { this.a; this.m(); return null; }
+        }`;
+        
+        const parse = await helper(text);
+        const statements = (parse.parseResult.value
+                            .classes[0]
+                            .members[1] as SJMethod)
+                            .body
+                            .statements;
+
+        expect(SJcompute.expectedType(statements[0])).toBeUndefined();
+        expect(SJcompute.expectedType(statements[1])).toBeUndefined();
+    });
+
+    it('Expected Wrong Method Invocation Argument Types (1)', async () => {
+        const text=`this.n(new P1(), new P2());`;
+        const exp = ((await testStatements(text))[0] as SJMemberSelection).args;
+        expect(SJcompute.expectedType(exp[0])).toBeUndefined();
+        expect(SJcompute.expectedType(exp[1])).toBeUndefined();
+    });
+
+    it('Expected Wrong Method Invocation Argument Types (2)', async () => {
+        const text=`this.m(new P1(), new P2(), new P1());`;
+        const exp = ((await testStatements(text))[0] as SJMemberSelection).args;
+        expect(SJcompute.expectedType(exp[2])).toBeUndefined();
     });
 
 });
