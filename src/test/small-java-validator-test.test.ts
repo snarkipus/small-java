@@ -1,5 +1,5 @@
 import { expectError, expectNoIssues, validationHelper, ValidationResult } from 'langium/test';
-import { SJClass, SJIfStatement, SJMemberSelection, SJMethod, SJProgram, SJVariableDeclaration, SmallJavaAstType } from '../language-server/generated/ast';
+import { SJClass, SJIfStatement, SJMemberSelection, SJMethod, SJNew, SJProgram, SJVariableDeclaration, SmallJavaAstType } from '../language-server/generated/ast';
 import { createSmallJavaServices } from '../language-server/small-java-module';
 import { EmptyFileSystem } from 'langium';
 import * as SJutil from '../util/small-java-model-util';
@@ -428,19 +428,13 @@ describe('Small Java Validator: Test Valid Hierarchy', () => {
     });
 })
 
-// describe('Small Java Validator: Variable Declaration Incompatible Types', () => {
-//     const text=`A v = new C();`;
+describe('Small Java Validator: Variable Declaration Incompatible Types', () => {
+    const text=`A v = new C();`;
 
-//     let validationResult: ValidationResult<SJProgram>;
-
-//     beforeAll(async () => {
-//         validationResult = await validate(text);
-//     });
-
-//     it('Should not detect issues', () => {
-//         assertIncompatibleTypes(text, SJClass, 'A', 'C');
-//     });
-// })
+   it('Should not detect issues', () => {
+        assertIncompatibleTypes(text, SJNew, 'A', 'C');
+    });
+})
 
 function assertDuplicate(input: string, type: SmallJavaAstType, desc: string, name: string, result: ValidationResult<SJProgram>) {
     const headMark = result.document.textDocument.getText().indexOf(name);
@@ -469,28 +463,35 @@ function assertHierarchy(c: SJClass, expected: string) {
     expect(classHierarchy).toBe(expected);
 }
 
-// async function assertIncompatibleTypes(methodBody: string, c: SJClass, expectedType: string, actualType: string) {
-//     const text=`
-//     class A {}
-//     class B extends A {}
-//     class C {
-//         A f;
-//         A m(A p) {
-//         ${methodBody}
-//         }
+async function assertIncompatibleTypes(methodBody: string, c: any, expectedType: string, actualType: string) {
+    const text=`
+    class A {}
+    class B extends A {}
+    class C {
+        A f;
+        A m(A p) {
+        ${methodBody}
+        return null;
+        }
+    }
+    `;
+
+    const validationResult = await validate(text);//?
+
+    expectError(validationResult, "Incompatible types. Expected " + expectedType + " but was " + actualType,
+        {
+            node: c,//?
+            property: {
+                name: 'name'
+            }
+        }
+    )
+}
+
+// expectError(validationResult, "Method must have a return statement",
+// {
+//     node: rule.members[0] as SJMethod,
+//     property: {
+//         name: 'body'
 //     }
-//     `;
-
-//     const validationResult = await validate(text);
-
-//     console.log(validationResult);
-
-//     // expectError(
-//     //     c,
-//     //     "Incompatible types. Expected '" + expectedType + "' but was '" + actualType + "'"
-//     //     {
-//     //         offset: someOffset,
-//     //         length: name.length + 1
-//     //     }
-//     // )
-// }
+// });

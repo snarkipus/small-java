@@ -12,6 +12,70 @@ export const SmallJavaGrammar = (): Grammar => loadedSmallJavaGrammar ?? (loaded
   "name": "SmallJava",
   "rules": [
     {
+      "$type": "TerminalRule",
+      "hidden": true,
+      "name": "WS",
+      "definition": {
+        "$type": "RegexToken",
+        "regex": "\\\\s+"
+      },
+      "fragment": false
+    },
+    {
+      "$type": "TerminalRule",
+      "name": "ID",
+      "definition": {
+        "$type": "RegexToken",
+        "regex": "[_a-zA-Z][\\\\w_]*"
+      },
+      "fragment": false,
+      "hidden": false
+    },
+    {
+      "$type": "TerminalRule",
+      "name": "INT",
+      "type": {
+        "$type": "ReturnType",
+        "name": "number"
+      },
+      "definition": {
+        "$type": "RegexToken",
+        "regex": "[0-9]+"
+      },
+      "fragment": false,
+      "hidden": false
+    },
+    {
+      "$type": "TerminalRule",
+      "name": "STRING",
+      "definition": {
+        "$type": "RegexToken",
+        "regex": "\\"[^\\"]*\\"|'[^']*'"
+      },
+      "fragment": false,
+      "hidden": false
+    },
+    {
+      "$type": "TerminalRule",
+      "hidden": true,
+      "name": "ML_COMMENT",
+      "definition": {
+        "$type": "RegexToken",
+        "regex": "\\\\/\\\\*[\\\\s\\\\S]*?\\\\*\\\\/"
+      },
+      "fragment": false
+    },
+    {
+      "$type": "TerminalRule",
+      "hidden": true,
+      "name": "SL_COMMENT",
+      "definition": {
+        "$type": "RegexToken",
+        "regex": "\\\\/\\\\/[^\\\\n\\\\r]*"
+      },
+      "fragment": false
+    },
+    {
       "$type": "ParserRule",
       "name": "SJProgram",
       "entry": true,
@@ -1141,70 +1205,6 @@ export const SmallJavaGrammar = (): Grammar => loadedSmallJavaGrammar ?? (loaded
       "hiddenTokens": [],
       "parameters": [],
       "wildcard": false
-    },
-    {
-      "$type": "TerminalRule",
-      "hidden": true,
-      "name": "WS",
-      "definition": {
-        "$type": "RegexToken",
-        "regex": "\\\\s+"
-      },
-      "fragment": false
-    },
-    {
-      "$type": "TerminalRule",
-      "name": "ID",
-      "definition": {
-        "$type": "RegexToken",
-        "regex": "[_a-zA-Z][\\\\w_]*"
-      },
-      "fragment": false,
-      "hidden": false
-    },
-    {
-      "$type": "TerminalRule",
-      "name": "INT",
-      "type": {
-        "$type": "ReturnType",
-        "name": "number"
-      },
-      "definition": {
-        "$type": "RegexToken",
-        "regex": "[0-9]+"
-      },
-      "fragment": false,
-      "hidden": false
-    },
-    {
-      "$type": "TerminalRule",
-      "name": "STRING",
-      "definition": {
-        "$type": "RegexToken",
-        "regex": "\\"[^\\"]*\\"|'[^']*'"
-      },
-      "fragment": false,
-      "hidden": false
-    },
-    {
-      "$type": "TerminalRule",
-      "hidden": true,
-      "name": "ML_COMMENT",
-      "definition": {
-        "$type": "RegexToken",
-        "regex": "\\\\/\\\\*[\\\\s\\\\S]*?\\\\*\\\\/"
-      },
-      "fragment": false
-    },
-    {
-      "$type": "TerminalRule",
-      "hidden": true,
-      "name": "SL_COMMENT",
-      "definition": {
-        "$type": "RegexToken",
-        "regex": "\\\\/\\\\/[^\\\\n\\\\r]*"
-      },
-      "fragment": false
     }
   ],
   "definesHiddenTokens": false,

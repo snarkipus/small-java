@@ -56,10 +56,9 @@ export class SmallJavaTypeComputer {
         }
     }
 
-    // Need to implement this <----------------
-    // def isPrimitive(SJClass c) {
-	// 	c.eResource === null
-	// }
+    static isPrimitive(c: SJClass) {
+        return c.$container === undefined;
+    }
 
     static expectedType(e: SJExpression) {
         const c = e.$container;
