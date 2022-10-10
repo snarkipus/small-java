@@ -44,7 +44,7 @@ describe('Small Java Scope Provider', async () => {
         v4Ref = (refNode as SJBlock).statements[2];
     });
 
-    it.only('Computes SJSymbolRef:SJSymbol scopes for v3 declaration -> v2, v1, p', () => {
+    it.skip('Computes SJSymbolRef:SJSymbol scopes for v3 declaration -> v2, v1, p', () => {
 
         // findFirst[name == 'v3']
         //     .expression
@@ -67,7 +67,7 @@ describe('Small Java Scope Provider', async () => {
         expect(computedScope).toBe('v2, v1, p');
     });
 
-    it('Computes SJSymbolRef:SJSymbol scopes for v4 declaration -> v1, p', () => {
+    it.skip('Computes SJSymbolRef:SJSymbol scopes for v4 declaration -> v1, p', () => {
         
         // findFirst[name == 'v4']
         //     .expression

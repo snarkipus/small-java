@@ -46,7 +46,7 @@ export class SmallJavaScopeProvider extends DefaultScopeProvider {
         if (precomputed) {
             let currentNode: AstNode | undefined = context.container;//? [$.$type, $.name]
             do {
-                console.log(currentNode.$type);
+                // console.log(currentNode.$type);
                 const allDescriptions = precomputed.get(currentNode);
                 const varDecArray: AstNodeDescription[] = [];
                 const scopesArray: AstNodeDescription[] = [];

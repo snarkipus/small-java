@@ -27,7 +27,7 @@ export class SmallJavaValidationRegistry extends ValidationRegistry {
                 validator.checkNoDuplicateVariables,
             ],
             SJMethod: validator.checkMethodEndsWithReturn,
-            SJExpression: validator.checkConformance,
+            // SJExpression: validator.checkConformance,
         };
         this.register(checks, validator);
     }

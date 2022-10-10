@@ -1,9 +1,9 @@
+class A {}
+class B extends A {}
 class C {
     A f;
     A m(A p) {
-        A v = null;
-        return null;
+    A v = new C();
+    return null;
     }
 }
-
-class A {}
