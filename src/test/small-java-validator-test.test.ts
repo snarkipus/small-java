@@ -1,5 +1,5 @@
 import { expectError, expectNoIssues, validationHelper, ValidationResult } from 'langium/test';
-import { SJClass,  SJIfStatement, SJMemberSelection, SJMethod, SJNew, SJProgram, SJVariableDeclaration, SmallJavaAstType } from '../language-server/generated/ast';
+import { SJClass,  SJIfStatement, SJMember, SJMemberSelection, SJMethod, SJNew, SJProgram, SJVariableDeclaration, SmallJavaAstType } from '../language-server/generated/ast';
 import { createSmallJavaServices } from '../language-server/small-java-module';
 import { EmptyFileSystem } from 'langium';
 import * as SJutil from '../util/small-java-model-util';
@@ -488,6 +488,68 @@ describe('Small Java Validator: Invalid Number of Arguments', () => {
 
     });
 
+});
+
+describe.skip('Small Java Validator: Method Overrides', () => {
+    let validationResult: ValidationResult<SJProgram>;
+    let rule1: SJMember;
+    let rule2: SJMember;
+
+    beforeAll(async () => {
+    const text=`
+        class A {
+            A m(A a) { return null; }
+            B n(A a) { return null; }
+        }
+
+        class B extends A {
+            // parameters must have the same type
+            A m(B a) { return null; }
+            // return type cannot be a supertype
+            A n(A a) { return null; }
+        }
+
+        class C extends A {
+            // return type can be a subtype
+            B m(A a) { return null; }
+        }
+        `;
+
+        validationResult = await validate(text);
+
+        rule1 = validationResult.document.parseResult.value
+                    .classes[1]
+                    .members[0];
+
+        rule2 = validationResult.document.parseResult.value
+                    .classes[1]
+                    .members[1];
+    });
+    
+
+    it('Detects invalid method override (1)', () => {
+        expectError(
+            validationResult,
+            "The method 'm' must override a superclass method",
+            {
+                node: rule1,
+            }
+        );
+    });
+
+    it('Detects invalid method override (2)', () => {
+        expectError(
+            validationResult,
+            "The method 'n' must override a superclass method",
+            {
+                node: rule2,
+            }
+        );
+    });
+
+    it('Detects invalid method override (3)', () => {
+        expect(validationResult.diagnostics.length).toBe(2);
+    });
 });
 
 function assertDuplicate(input: string, type: SmallJavaAstType, desc: string, name: string, result: ValidationResult<SJProgram>) {

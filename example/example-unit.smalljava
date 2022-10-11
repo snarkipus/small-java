@@ -1,9 +1,16 @@
-class A {}
-class B extends A {}
-class C {
-    A f;
-    A m(A p) {
-    A v = new C();
-    return null;
-    }
+class A {
+    A m(A a) { return null; }
+    B n(A a) { return null; }
+}
+
+class B extends A {
+    // parameters must have the same type
+    A m(B a) { return null; }
+    // return type cannot be a supertype
+    A n(A a) { return null; }
+}
+
+class C extends A {
+    // return type can be a subtype
+    B m(A a) { return null; }
 }

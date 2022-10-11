@@ -14,7 +14,10 @@ export class SmallJavaValidationRegistry extends ValidationRegistry {
         super(services);
         const validator = services.validation.SmallJavaValidator;
         const checks: ValidationChecks<SmallJavaAstType> = {
-            SJClass: validator.checkClassHierarchy,            
+            SJClass: [
+                validator.checkClassHierarchy,
+                validator.checkMethodOverride,
+            ],            
             SJProgram: [
                 validator.checkNoDuplicateClasses,
                 validator.checkNoDuplicateFields,
@@ -47,6 +50,7 @@ export namespace IssueCodes {
     export const DuplicateElements = 'duplicate-elements';
     export const IncompatibleTypes = 'incompatible-types';
     export const InvalidArgs = 'invalid-args';
+    export const WrongMethodOverride = 'wrong-method-override';
 }
 
 /**
@@ -219,5 +223,30 @@ export class SmallJavaValidator {
             }
         }
     }
+
+    checkMethodOverride(c: SJClass, accept: ValidationAcceptor): void {
+        const hierarchyMethods = util.classHierarchyMethods(c);
+        const methods = stream(c.members).filter(isSJMethod);
+        methods.forEach(m => {
+            const overridden = hierarchyMethods.get(m.name);
+            const classType = m.type.ref ?? SJcompute.NULL_TYPE;
+            if (overridden) {
+                const overriddenType = overridden.type.ref ?? SJcompute.NULL_TYPE;
+                if(
+                        !SJconform.isConformant(classType, overriddenType)
+                    ||  !m.params.map(e => e.type.ref).every((e, i) => overridden.params.map(e => e.type.ref)[i])
+                )
+                accept(
+                    'error',
+                    "The method '" + m.name + "' must override a superclass method",
+                    {
+                        node: c,
+                        property: 'members',
+                        code: IssueCodes.WrongMethodOverride
+                    }
+                )
+            }
+        });
+    }   
 
 }

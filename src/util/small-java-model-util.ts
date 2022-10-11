@@ -55,4 +55,5 @@ export class SmallJavaModeUtil {
     static memberAsStringWithType(m: SJMember): string {
         return this.memberAsString(m) + " : " + m.type.ref?.name
     }
+
 }
