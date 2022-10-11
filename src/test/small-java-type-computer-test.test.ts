@@ -4,10 +4,8 @@ import { SmallJavaTypeComputer  as SJcompute} from '../util/small-java-type-comp
 import { SJAssignment, SJExpression, SJIfStatement, SJMemberSelection, SJMethod, SJProgram, SJReturn, SJStatement, SJVariableDeclaration } from '../language-server/generated/ast';
 import { createSmallJavaServices } from '../language-server/small-java-module';
 
-
 const services = createSmallJavaServices(EmptyFileSystem).SmallJava;
 const helper = parseHelper<SJProgram>(services);
-
 
 describe('Small Java Type Computer', () => {
 

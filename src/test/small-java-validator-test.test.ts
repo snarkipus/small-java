@@ -1,5 +1,5 @@
 import { expectError, expectNoIssues, validationHelper, ValidationResult } from 'langium/test';
-import { SJClass, SJExpression, SJIfStatement, SJMemberSelection, SJMethod, SJNew, SJProgram, SJVariableDeclaration, SmallJavaAstType } from '../language-server/generated/ast';
+import { SJClass,  SJIfStatement, SJMemberSelection, SJMethod, SJNew, SJProgram, SJVariableDeclaration, SmallJavaAstType } from '../language-server/generated/ast';
 import { createSmallJavaServices } from '../language-server/small-java-module';
 import { EmptyFileSystem } from 'langium';
 import * as SJutil from '../util/small-java-model-util';
@@ -121,7 +121,7 @@ describe('Small Java Validator: Member Selection', () => {
         validationResult = await validate(text);
     });
 
-    it.skip('Should detect no errors on valid member selection', () => {
+    it('Should detect no errors on valid member selection', () => {
         expectNoIssues(validationResult);
     });
 
@@ -197,7 +197,7 @@ describe('Small Java Validator: Unreachable Code Only Once (BROKEN)', () => {
         validationResult = await validate(text);
     });
 
-    it.skip('Should detect unreachable code only once (SHOULD FAIL)', () => {
+    it('Should detect unreachable code only once (SHOULD FAIL)', () => {
         const rule = validationResult.document.parseResult.value.classes[0];
         expectError(validationResult, "Unreachable code",
         {
@@ -215,6 +215,7 @@ describe('Small Java Validator: Unreachable Code Inside IF (BROKEN)', () => {
                 C i = null;
                 this.m();
             }
+            return null;
         }
     }
     `;
@@ -225,11 +226,17 @@ describe('Small Java Validator: Unreachable Code Inside IF (BROKEN)', () => {
         validationResult = await validate(text);
     });
 
-    it.skip('Should detect unreachable code inside IF block', () => {
-        const rule = validationResult.document.parseResult.value.classes[0];
+    it('Should detect unreachable code inside IF block', () => {
+        const rule = ((validationResult.document.parseResult.value
+                        .classes[0]
+                        .members[0] as SJMethod)
+                        .body
+                        .statements[0] as SJIfStatement)
+                        .thenBlock
+                        .statements[1];
         expectError(validationResult, "Unreachable code",
         {
-            node: ((rule.members[0] as SJMethod).body.statements[1] as SJIfStatement).thenBlock.statements[1] as SJVariableDeclaration,
+            node: rule,
         });
     });
 })
@@ -250,7 +257,7 @@ describe('Small Java Validator: No Unreachable Code', () => {
         validationResult = await validate(text);
     });
 
-    it.skip('should not detect any errors', () => {
+    it('should not detect any errors', () => {
         expectNoIssues(validationResult);
     });
 });
@@ -428,13 +435,60 @@ describe('Small Java Validator: Test Valid Hierarchy', () => {
     });
 })
 
-describe('Small Java Validator: Variable Declaration Incompatible Types', () => {
-    const text=`A v = new C();`;
+describe('Small Java Validator: Incompatible Types', () => {
 
-   it.skip('Should not detect issues', () => {
+   it('Variable Declarations', () => {
+        const text=`A v = new C();`;    
+        assertIncompatibleTypes(text, SJNew, 'A', 'C');
+    });
+
+    it('Return Expressions', () => {
+        const text=`return new C();`;    
+        assertIncompatibleTypes(text, SJNew, 'A', 'C');
+    });
+
+    it('Argument Expressions', () => {
+        const text=`this.m(new C());`;    
+        assertIncompatibleTypes(text, SJNew, 'A', 'C');
+    });
+
+    it('If Expressions', () => {
+        const text=`if (new C()) { return null; } `;    
+        assertIncompatibleTypes(text, SJNew, 'booleanType', 'C');
+    });
+
+    it('Assignments', () => {
+        const text=`A v = null; v = new C();`;    
         assertIncompatibleTypes(text, SJNew, 'A', 'C');
     });
 })
+
+describe('Small Java Validator: Invalid Number of Arguments', () => {
+
+    it('Detects too few arguments', async () => {
+        const text=`
+        class A {}
+        class B {}
+        class C {
+            C m(A a, B b) { return this.m(new B()); }
+        }
+        `;
+        
+        const validationResult = await validate(text);
+        const index = validationResult.document.textDocument.getText().indexOf('new');
+
+        expectError(
+            validationResult,
+            "Invalid number of arguments. Expected 2 but was 1",
+            {
+                offset: index,
+                length: 7,
+            }
+        );
+
+    });
+
+});
 
 function assertDuplicate(input: string, type: SmallJavaAstType, desc: string, name: string, result: ValidationResult<SJProgram>) {
     const headMark = result.document.textDocument.getText().indexOf(name);
@@ -463,7 +517,7 @@ function assertHierarchy(c: SJClass, expected: string) {
     expect(classHierarchy).toBe(expected);
 }
 
-async function assertIncompatibleTypes(methodBody: string, c: any, expectedType: string, actualType: string) {
+async function assertIncompatibleTypes(methodBody: string, c: SmallJavaAstType, expectedType: string, actualType: string) {
     const text=`
     class A {}
     class B extends A {}
@@ -477,13 +531,14 @@ async function assertIncompatibleTypes(methodBody: string, c: any, expectedType:
     `;
 
     const validationResult = await validate(text);
-
-    expectError(validationResult, "Incompatible types. Expected " + expectedType + " but was " + actualType,
+    const index = validationResult.document.textDocument.getText().indexOf('new');
+    
+    expectError(
+        validationResult,
+        "Incompatible types. Expected " + expectedType + " but was " + actualType,
         {
-            node: c as SJExpression,
-            property: {
-                name: 'name'
-            }
+            offset: index,
+            length: 7
         }
     )
 }

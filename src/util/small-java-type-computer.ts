@@ -1,5 +1,4 @@
 import { getContainerOfType, Reference } from 'langium';
-import { Warning } from 'postcss';
 import { SJExpression, SJClass, SJNew, SJSymbolRef, SJMemberSelection, SJAssignment, isSJClass, SJMember, SJBlock, SJIfStatement, SJMethod, SJProgram, SJReturn, SJVariableDeclaration, isSJMethod } from '../language-server/generated/ast'; 
 
 export class IntType implements SJClass {

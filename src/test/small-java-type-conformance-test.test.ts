@@ -21,11 +21,11 @@ describe('Small Java Type Conformance Test', () => {
     
         const parse = await helper(text);
         const classes = parse.parseResult.value.classes;
-        expect(SJconform.isConformant(classes[0], classes[0])).toBe(true);
-        expect(SJconform.isConformant(classes[1], classes[0])).toBe(true);
-        expect(SJconform.isConformant(classes[2], classes[0])).toBe(false);
-        expect(SJconform.isConformant(classes[3], classes[0])).toBe(true);
-        expect(SJconform.isConformant(SmallJavaTypeComputer.NULL_TYPE, classes[0])).toBe(true);
+        expect(SJconform.isConformant(classes[0], classes[0])).toBeTruthy();
+        expect(SJconform.isConformant(classes[1], classes[0])).toBeTruthy();
+        expect(SJconform.isConformant(classes[2], classes[0])).toBeFalsy();
+        expect(SJconform.isConformant(classes[3], classes[0])).toBeTruthy();
+        expect(SJconform.isConformant(SmallJavaTypeComputer.NULL_TYPE, classes[0])).toBeTruthy();
     })    
 
 })

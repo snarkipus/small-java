@@ -21,13 +21,16 @@ export class SmallJavaValidationRegistry extends ValidationRegistry {
                 validator.checkNoDuplicateMethods,
                 validator.checkNoDuplicateParams,
             ],
-            SJMemberSelection: validator.checkMemberSelection,
+            SJMemberSelection: [
+                validator.checkMemberSelection,
+                validator.checkMethodInvocationArguments,
+            ],
             SJBlock: [
                 validator.checkUnreachableCode,
                 validator.checkNoDuplicateVariables,
             ],
             SJMethod: validator.checkMethodEndsWithReturn,
-            // SJExpression: validator.checkConformance,
+            SJExpression: validator.checkConformance,
         };
         this.register(checks, validator);
     }
@@ -43,6 +46,7 @@ export namespace IssueCodes {
     export const MissingFinalReturn = 'missing-final-return';
     export const DuplicateElements = 'duplicate-elements';
     export const IncompatibleTypes = 'incompatible-types';
+    export const InvalidArgs = 'invalid-args';
 }
 
 /**
@@ -180,17 +184,6 @@ export class SmallJavaValidator {
         }
     }
 
-    // @Check def void checkConformance(SJExpression exp) {
-	// 	val actualType = exp.typeFor
-	// 	val expectedType = exp.expectedType
-	// 	if (expectedType === null || actualType === null)
-	// 		return; // nothing to check
-	// 	if (!actualType.isConformant(expectedType)) {
-	// 		error("Incompatible types. Expected '" + expectedType.name + "' but was '" + actualType.name + "'",
-	// 			null, INCOMPATIBLE_TYPES);
-	// 	}
-	// }
-
     checkConformance(exp: SJExpression, accept: ValidationAcceptor): void {
         const actualType = SJcompute.typeFor(exp);
         const expectedType = SJcompute.expectedType(exp);
@@ -207,6 +200,23 @@ export class SmallJavaValidator {
                     code: IssueCodes.IncompatibleTypes
                 }
             )
+        }
+    }
+
+    checkMethodInvocationArguments(sel: SJMemberSelection, accept: ValidationAcceptor): void {
+        const method = sel.member.ref as SJMethod;
+        if (isSJMethod(method)) {
+            if (method.params.length !== (sel as SJMemberSelection).args.length) {
+                accept(
+                    'error',
+                    'Invalid number of arguments. Expected ' + method.params.length + ' but was ' + (sel as SJMemberSelection).args.length,
+                    {
+                        node: sel,
+                        property: 'args',
+                        code: IssueCodes.InvalidArgs
+                    }
+                )
+            }
         }
     }
 
