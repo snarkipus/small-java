@@ -13,8 +13,8 @@ export default defineConfig({
         coverage: {
             provider: 'c8',
             reporter: ['text', 'html'],
-            include: ['packages/langium/src'],
-            exclude: ['**/generated'],
+            include: ['src/**'],
+            exclude: ['src/test/**'],
         }
     }
 });
