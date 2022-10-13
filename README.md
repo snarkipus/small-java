@@ -3,7 +3,7 @@
     <img alt="SmallJava Logo" width="640" src="static/coollogo_com-1467274.png">
   </a>
   <h3>
-    Implementing Domain-Specific Languages with <span style="color:grey; text-decoration:line-through">Xtext and Xtend</span> Langium
+    Implementing Domain-Specific Languages with <del>Xtext and Xtend</del> Langium
   </h3>
 </div>
 
