@@ -1,5 +1,9 @@
 {
     "name": "small-java",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/snarkipus/small-java.git"
+    },
     "displayName": "small-java",
     "description": "Please enter a brief description here",
     "version": "0.0.1",
