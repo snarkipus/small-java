@@ -4,6 +4,7 @@ import { CancellationToken } from 'vscode-jsonrpc';
 import { SmallJavaNameProvider } from './small-java-naming';
 import { SJClass, isSJClass, isSJVariableDeclaration, isSJParameter, isSJNamedElement, isSJMethod, isSJBlock, SJProgram, SJMethod } from './generated/ast';
 import { SmallJavaServices } from './small-java-module';
+import { isDefinedBefore } from '../util/small-java-model-util';
 
 export class SmallJavaScopeProvider extends DefaultScopeProvider {
     
@@ -15,25 +16,32 @@ export class SmallJavaScopeProvider extends DefaultScopeProvider {
         const scopes: Array<Stream<AstNodeDescription>> = [];
         const referenceType = this.reflection.getReferenceType(context);
 
-        const precomputed = getDocument(context.container).precomputedScopes;
-        if (precomputed) {
-            let currentNode: AstNode | undefined = context.container;
-            do {
-                const allDescriptions = precomputed.get(currentNode);
-                if (allDescriptions.length > 0) {
-                    scopes.push(stream(allDescriptions).filter(
-                        desc => this.reflection.isSubtype(desc.type, referenceType)));
+        switch (referenceType) {
+            case 'SJSymbol':
+                const precomputed = getDocument(context.container).precomputedScopes;
+                if (precomputed) {
+                    let currentNode: AstNode | undefined = context.container;
+                    do {
+                        const allDescriptions = precomputed.get(currentNode);
+                        if (allDescriptions.length > 0) {
+                            scopes.push(stream(allDescriptions)
+                                .filter(desc => this.reflection.isSubtype(desc.type, referenceType))
+                                .filter(desc => isDefinedBefore(desc.node!, context.container.$container!))
+                            );
+                        }
+                        currentNode = currentNode.$container;
+                    } while (currentNode);
                 }
-                currentNode = currentNode.$container;
-            } while (currentNode);
-        }
+        
+                let result: Scope = EMPTY_SCOPE;
+                for (let i = scopes.length - 1; i >= 0; i--) {
+                    result = this.createScope(scopes[i], result);
+                }
+                return result;
 
-        // let result: Scope = this.getGlobalScope(referenceType);
-        let result: Scope = EMPTY_SCOPE;
-        for (let i = scopes.length - 1; i >= 0; i--) {
-            result = this.createScope(scopes[i], result);
+            default:
+                return super.getScope(context);
         }
-        return result;
     }
 
     // getScope(context: ReferenceInfo): Scope {
@@ -192,8 +200,6 @@ export class SmallJavaScopeComputation extends DefaultScopeComputation {
 // 		return super.getScope(context, reference)
 // 	}
 
-
-
 // 	def protected IScope scopeForMemberSelection(SJMemberSelection sel) {
 // 		val type = sel.receiver.typeFor
 
@@ -217,5 +223,3 @@ export class SmallJavaScopeComputation extends DefaultScopeComputation {
 // 			)
 // 		}
 // 	}
-
-// }

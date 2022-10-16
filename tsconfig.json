@@ -13,7 +13,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "types": [
-      "vitest/globals",
+      "jest",
+      "jest-expect-message",
       "node"
     ], 
   },

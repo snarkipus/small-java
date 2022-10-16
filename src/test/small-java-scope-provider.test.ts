@@ -48,10 +48,7 @@ describe('Small Java Scope Provider', async () => {
                     .expression; 
     });
 
-    it.skip('Computes SJSymbolRef:SJSymbol scopes for v3 declaration -> v2, v1, p', () => {
-          
-        // .assertScope(SmallJavaPackage.eINSTANCE.SJSymbolRef_Symbol, "v2, v1, p")
-
+    it('Computes SJSymbolRef:SJSymbol scopes for v3 declaration -> v2, v1, p', () => {
         const context = {
             $type: 'SJSymbolRef',
             $container: v3Ref.$container,
@@ -65,14 +62,11 @@ describe('Small Java Scope Provider', async () => {
         };
 
         let scope = services.references.ScopeProvider.getScope(refInfo);
-        const computedScope = scope.getAllElements().map(e => e.name).join(', ');//? $.split(', ').length
+        const computedScope = scope.getAllElements().map(e => e.name).join(', ');
         expect(computedScope).toBe('v2, v1, p');
     });
 
-    it.skip('Computes SJSymbolRef:SJSymbol scopes for v4 declaration -> v1, p', () => {
-        
-        // .assertScope(SmallJavaPackage.eINSTANCE.SJSymbolRef_Symbol, "v1, p")
-
+    it('Computes SJSymbolRef:SJSymbol scopes for v4 declaration -> v1, p', () => {
         const context = {
             $type: 'SJSymbolRef',
             $container: v4Ref.$container,
@@ -86,7 +80,7 @@ describe('Small Java Scope Provider', async () => {
         };
 
         let scope = services.references.ScopeProvider.getScope(refInfo);
-        const computedScope = scope.getAllElements().map(e => e.name).join(', ');//? $.split(', ').length
+        const computedScope = scope.getAllElements().map(e => e.name).join(', ');
         expect(computedScope).toBe('v1, p');
     });
 
