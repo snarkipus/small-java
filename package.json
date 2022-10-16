@@ -67,8 +67,6 @@
         "vscode-languageserver": "^8.0.2"
     },
     "devDependencies": {
-        "@types/jest": "^29.1.2",
-        "@types/jest-expect-message": "^1.1.0",
         "@typescript-eslint/eslint-plugin": "^5.39.0",
         "@typescript-eslint/parser": "^5.39.0",
         "@vitest/ui": "^0.24.3",

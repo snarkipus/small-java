@@ -1,6 +1,6 @@
 import { AstNode, EmptyFileSystem, LangiumDocument, Reference } from "langium";
 import { parseDocument } from "langium/test";
-import { SJBlock, SJIfStatement, SJMethod, SJProgram } from "../language-server/generated/ast";
+import { SJBlock, SJIfStatement, SJMethod, SJProgram, SJVariableDeclaration } from "../language-server/generated/ast";
 import { createSmallJavaServices } from "../language-server/small-java-module";
 
 
@@ -31,62 +31,62 @@ describe('Small Java Scope Provider', async () => {
 
         testDoc = await parseDocument(services, text);
         
+        
         refNode = ((testDoc.parseResult.value as SJProgram)
                     .classes[0]
                     .members[0] as SJMethod)
                     .body;
 
-        v3Ref = (((refNode as SJBlock)
+        v3Ref = ((((refNode as SJBlock)
                     .statements[1] as SJIfStatement)
                     .thenBlock)
-                    .statements[1];
+                    .statements[1] as SJVariableDeclaration)
+                    .expression;
 
-        v4Ref = (refNode as SJBlock).statements[2];
+        v4Ref = ((refNode as SJBlock)
+                    .statements[2] as SJVariableDeclaration)
+                    .expression; 
     });
 
     it.skip('Computes SJSymbolRef:SJSymbol scopes for v3 declaration -> v2, v1, p', () => {
-
-        // findFirst[name == 'v3']
-        //     .expression
-        //     .assertScope(SmallJavaPackage.eINSTANCE.SJSymbolRef_Symbol, "v2, v1, p")
+          
+        // .assertScope(SmallJavaPackage.eINSTANCE.SJSymbolRef_Symbol, "v2, v1, p")
 
         const context = {
             $type: 'SJSymbolRef',
-            $container: v3Ref,
+            $container: v3Ref.$container,
             $containerProperty: 'symbol'
         };
         
         const refInfo = {
             reference: {} as Reference,
             container: context,
-            property: 'symbol'
+            property: context.$containerProperty
         };
 
         let scope = services.references.ScopeProvider.getScope(refInfo);
-        const computedScope = scope.getAllElements().map(e => e.name).join(', ');//? $.length
+        const computedScope = scope.getAllElements().map(e => e.name).join(', ');//? $.split(', ').length
         expect(computedScope).toBe('v2, v1, p');
     });
 
     it.skip('Computes SJSymbolRef:SJSymbol scopes for v4 declaration -> v1, p', () => {
         
-        // findFirst[name == 'v4']
-        //     .expression
-        //     .assertScope(SmallJavaPackage.eINSTANCE.SJSymbolRef_Symbol, "v1, p")
+        // .assertScope(SmallJavaPackage.eINSTANCE.SJSymbolRef_Symbol, "v1, p")
 
         const context = {
             $type: 'SJSymbolRef',
-            $container: v4Ref,
+            $container: v4Ref.$container,
             $containerProperty: 'symbol'
         };
         
         const refInfo = {
             reference: {} as Reference,
             container: context,
-            property: 'symbol'
+            property: context.$containerProperty
         };
 
         let scope = services.references.ScopeProvider.getScope(refInfo);
-        const computedScope = scope.getAllElements().map(e => e.name).join(', ');//? $.length
+        const computedScope = scope.getAllElements().map(e => e.name).join(', ');//? $.split(', ').length
         expect(computedScope).toBe('v1, p');
     });
 

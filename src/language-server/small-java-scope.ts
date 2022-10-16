@@ -1,4 +1,4 @@
-import { AstNode, AstNodeDescription, DefaultScopeComputation, DefaultScopeProvider, getContainerOfType, getDocument, interruptAndCheck, LangiumDocument, LangiumServices, MultiMap, PrecomputedScopes,
+import { AstNode, AstNodeDescription, DefaultScopeComputation, DefaultScopeProvider, EMPTY_SCOPE, getContainerOfType, getDocument, interruptAndCheck, LangiumDocument, LangiumServices, MultiMap, PrecomputedScopes,
      ReferenceInfo, Scope, stream, Stream, streamAllContents } from 'langium';
 import { CancellationToken } from 'vscode-jsonrpc';
 import { SmallJavaNameProvider } from './small-java-naming';
@@ -6,22 +6,49 @@ import { SJClass, isSJClass, isSJVariableDeclaration, isSJParameter, isSJNamedEl
 import { SmallJavaServices } from './small-java-module';
 
 export class SmallJavaScopeProvider extends DefaultScopeProvider {
+    
     constructor(services: SmallJavaServices) {
         super(services);
     }
 
     getScope(context: ReferenceInfo): Scope {
+        const scopes: Array<Stream<AstNodeDescription>> = [];
         const referenceType = this.reflection.getReferenceType(context);
-        let result : Scope;
-        switch (referenceType) {
-            case 'SJSymbol':
-                result = this.getScopeForSymbolRef(context);
 
-            default:
-                result = super.getScope(context);
+        const precomputed = getDocument(context.container).precomputedScopes;
+        if (precomputed) {
+            let currentNode: AstNode | undefined = context.container;
+            do {
+                const allDescriptions = precomputed.get(currentNode);
+                if (allDescriptions.length > 0) {
+                    scopes.push(stream(allDescriptions).filter(
+                        desc => this.reflection.isSubtype(desc.type, referenceType)));
+                }
+                currentNode = currentNode.$container;
+            } while (currentNode);
+        }
+
+        // let result: Scope = this.getGlobalScope(referenceType);
+        let result: Scope = EMPTY_SCOPE;
+        for (let i = scopes.length - 1; i >= 0; i--) {
+            result = this.createScope(scopes[i], result);
         }
         return result;
     }
+
+    // getScope(context: ReferenceInfo): Scope {
+    //     const referenceType = this.reflection.getReferenceType(context);
+    //     let result : Scope;
+    //     switch (referenceType) {
+    //         case 'SJSymbol':
+    //             // result = this.getScopeForSymbolRef(context);
+    //             result = super.getScope(context);
+
+    //         default:
+    //             result = super.getScope(context);
+    //     }
+    //     return result;
+    // }
 
     // 	def protected IScope scopeForSymbolRef(EObject context) {
     // 		val container = context.eContainer
@@ -46,7 +73,6 @@ export class SmallJavaScopeProvider extends DefaultScopeProvider {
         if (precomputed) {
             let currentNode: AstNode | undefined = context.container;//? [$.$type, $.name]
             do {
-                // console.log(currentNode.$type);
                 const allDescriptions = precomputed.get(currentNode);
                 const varDecArray: AstNodeDescription[] = [];
                 const scopesArray: AstNodeDescription[] = [];
