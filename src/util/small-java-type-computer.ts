@@ -40,7 +40,7 @@ export class SmallJavaTypeComputer {
     public static BOOL_TYPE   = new BoolType();
     public static NULL_TYPE   = new NullType();
 
-    static typeFor(e: SJExpression): SJClass | undefined {
+    typeFor(e: SJExpression): SJClass | undefined {
         switch(e.$type) {
             case 'SJNew':             return (e as SJNew).type.ref;
             case 'SJSymbolRef':       return (e as SJSymbolRef).symbol.ref?.type.ref;
@@ -56,11 +56,11 @@ export class SmallJavaTypeComputer {
         }
     }
 
-    static isPrimitive(c: SJClass) {
+    isPrimitive(c: SJClass): boolean {
         return c.$container === undefined;
     }
 
-    static expectedType(e: SJExpression) {
+    expectedType(e: SJExpression): SJClass | undefined {
         const c = e.$container;
         const f = e.$containerProperty;
         switch(c.$type) {

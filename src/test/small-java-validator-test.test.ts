@@ -2,7 +2,7 @@ import { expectError, expectNoIssues, validationHelper, ValidationResult } from 
 import { SJClass,  SJIfStatement, SJMember, SJMemberSelection, SJMethod, SJNew, SJProgram, SJVariableDeclaration, SmallJavaAstType } from '../language-server/generated/ast';
 import { createSmallJavaServices } from '../language-server/small-java-module';
 import { EmptyFileSystem } from 'langium';
-import * as SJutil from '../util/small-java-model-util';
+import { classHierarchy } from '../util/small-java-model-util';
 
 const services = createSmallJavaServices(EmptyFileSystem).SmallJava;
 const validate = validationHelper<SJProgram>(services);
@@ -574,9 +574,9 @@ function assertDuplicate(input: string, type: SmallJavaAstType, desc: string, na
 }
 
 function assertHierarchy(c: SJClass, expected: string) {
-    const classRefSet = SJutil.SmallJavaModeUtil.classHierarchy(c);
-    const classHierarchy = [...classRefSet].map(r => r.ref?.name).join(', ');
-    expect(classHierarchy).toBe(expected);
+    const classRefSet = classHierarchy(c);
+    const clsHierarchy = [...classRefSet].map(r => r.ref?.name).join(', ');
+    expect(clsHierarchy).toBe(expected);
 }
 
 async function assertIncompatibleTypes(methodBody: string, c: SmallJavaAstType, expectedType: string, actualType: string) {

@@ -2,7 +2,7 @@ import { AstNode, AstNodeDescription, DefaultScopeComputation, DefaultScopeProvi
      ReferenceInfo, Scope, stream, Stream, streamAllContents } from 'langium';
 import { CancellationToken } from 'vscode-jsonrpc';
 import { SmallJavaNameProvider } from './small-java-naming';
-import { SJClass, isSJClass, isSJVariableDeclaration, isSJParameter, isSJNamedElement, isSJMethod, isSJBlock, SJProgram, SJMethod } from './generated/ast';
+import { SJClass, isSJClass, isSJVariableDeclaration, isSJParameter, isSJNamedElement, isSJMethod, isSJBlock, SJProgram } from './generated/ast';
 import { SmallJavaServices } from './small-java-module';
 import { isDefinedBefore } from '../util/small-java-model-util';
 

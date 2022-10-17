@@ -1,10 +1,12 @@
 import { AstNode, NamedAstNode, Stream, stream, streamAllContents, ValidationAcceptor, ValidationChecks, ValidationRegistry } from 'langium';
 import { SmallJavaAstType, SJClass, SJMemberSelection, SJBlock, isSJReturn, isSJField, isSJMethod, SJMethod, SJProgram, isSJVariableDeclaration, SJExpression } from './generated/ast';
 import type { SmallJavaServices } from './small-java-module';
-import { SmallJavaModeUtil as util } from '../util/small-java-model-util';
+import { classHierarchy, classHierarchyMethods, returnStatement } from '../util/small-java-model-util';
 import { MultiMap } from 'langium';
-import { SmallJavaTypeComputer as SJcompute } from '../util/small-java-type-computer';
-import { SmallJavaTypeConformance as SJconform } from '../util/small-java-type-conformance';
+import { SmallJavaTypeComputer } from '../util/small-java-type-computer';
+import { isConformant } from '../util/small-java-type-conformance';
+
+const typeComputer = new SmallJavaTypeComputer();
 
 /**
  * Registry for validation checks.
@@ -59,7 +61,7 @@ export namespace IssueCodes {
 export class SmallJavaValidator {
 
     checkClassHierarchy(c: SJClass, accept: ValidationAcceptor): void {
-        const hierarchy = util.classHierarchy(c);
+        const hierarchy = classHierarchy(c);
         hierarchy.forEach(ref => {
             if (ref.ref?.name === c.name) {
                 accept(
@@ -118,7 +120,7 @@ export class SmallJavaValidator {
     }
 
     checkMethodEndsWithReturn(method: SJMethod, accept: ValidationAcceptor): void {
-        if (util.returnStatement(method) === undefined) {
+        if (returnStatement(method) === undefined) {
             accept(
                 'error',
                 'Method must have a return statement',
@@ -189,12 +191,12 @@ export class SmallJavaValidator {
     }
 
     checkConformance(exp: SJExpression, accept: ValidationAcceptor): void {
-        const actualType = SJcompute.typeFor(exp);
-        const expectedType = SJcompute.expectedType(exp);
+        const actualType = typeComputer.typeFor(exp);
+        const expectedType = typeComputer.expectedType(exp);
         if (!expectedType || !actualType) {
             return; 
         }
-        if (!SJconform.isConformant(actualType as SJClass, expectedType as SJClass)) {
+        if (!isConformant(actualType as SJClass, expectedType as SJClass)) {
             accept(
                 'error',
                 'Incompatible types. Expected ' + (expectedType as SJClass).name + ' but was ' + (actualType as SJClass).name,
@@ -225,15 +227,15 @@ export class SmallJavaValidator {
     }
 
     checkMethodOverride(c: SJClass, accept: ValidationAcceptor): void {
-        const hierarchyMethods = util.classHierarchyMethods(c);
+        const hierarchyMethods = classHierarchyMethods(c);
         const methods = stream(c.members).filter(isSJMethod);
         methods.forEach(m => {
             const overridden = hierarchyMethods.get(m.name);
-            const classType = m.type.ref ?? SJcompute.NULL_TYPE;
+            const classType = m.type.ref ?? SmallJavaTypeComputer.NULL_TYPE;
             if (overridden) {
-                const overriddenType = overridden.type.ref ?? SJcompute.NULL_TYPE;
+                const overriddenType = overridden.type.ref ?? SmallJavaTypeComputer.NULL_TYPE;
                 if(
-                        !SJconform.isConformant(classType, overriddenType)
+                        !isConformant(classType, overriddenType)
                     ||  !m.params.map(e => e.type.ref).every((e, i) => overridden.params.map(e => e.type.ref)[i])
                 )
                 accept(

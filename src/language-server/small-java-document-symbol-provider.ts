@@ -1,7 +1,7 @@
 import { AstNode, CstNode, DefaultDocumentSymbolProvider, LangiumDocument } from "langium";
 import { DocumentSymbol, SymbolKind } from "vscode-languageserver";
 import { isSJMember } from "../language-server/generated/ast";
-import { SmallJavaModeUtil } from "../util/small-java-model-util";
+import { memberAsString } from "../util/small-java-model-util";
 import { SmallJavaServices } from "./small-java-module";
 
 export class SmallJavaDocumentSymbolProvider extends DefaultDocumentSymbolProvider {
@@ -41,7 +41,7 @@ export class SmallJavaDocumentSymbolProvider extends DefaultDocumentSymbolProvid
     protected nameText(node: AstNode, nameNode: CstNode): string {
         const name = this.nameProvider.getName(node);
         if (isSJMember(node)) {
-            return SmallJavaModeUtil.memberAsString(node) + " : " + node.type.ref?.name;
+            return memberAsString(node) + " : " + node.type.ref?.name;
         } else if (!name) {
             return nameNode.text;
         } else {

@@ -2,7 +2,7 @@ import { parseHelper } from 'langium/test';
 import { isSJField, isSJMethod, SJClass, SJMethod, SJProgram, SJReturn, isSJMemberSelection } from '../language-server/generated/ast';
 import { createSmallJavaServices } from '../language-server/small-java-module';
 import { EmptyFileSystem } from 'langium';
-import { SmallJavaModeUtil as util } from '../util/small-java-model-util';
+import { classHierarchy, classHierarchyMembers, classHierarchyMethods, memberAsStringWithType } from '../util/small-java-model-util';
 
 const services = createSmallJavaServices(EmptyFileSystem).SmallJava;
 const helper = parseHelper<SJProgram>(services);
@@ -77,7 +77,7 @@ describe('Small Java Model Utility Class', () => {
             let parse = await helper(text);
             const expected = 'm -> C2, n -> C1';
             const classTest = parse.parseResult.value.classes[2];
-            const refMap = util.classHierarchyMethods(classTest);
+            const refMap = classHierarchyMethods(classTest);
             const actual = [...refMap.entries()]
                                 .map(([key, value]) => key + " -> " + (value.$container as SJClass).name)
                                 .join(", ");
@@ -105,7 +105,7 @@ describe('Small Java Model Utility Class', () => {
             const parse = await helper(text);
             const expected = 'SJField f in C2, SJMethod m in C2, SJField m in C1, SJMethod m in C1, SJMethod n in C1, SJField n in C1';
             const classTest = parse.parseResult.value.classes[2];
-            const actual = util.classHierarchyMembers(classTest);
+            const actual = classHierarchyMembers(classTest);
             expect(actual.map(c => c.$type + ' ' + c.name + ' in ' + (c.$container as SJClass).name).join(', ')).toBe(expected);
         });
 
@@ -125,13 +125,13 @@ describe('Small Java Model Utility Class', () => {
             const lastClass = parse.parseResult.value.classes[2];
             let methods = lastClass.members.filter(m => isSJMethod(m));
             let fields = lastClass.members.filter(m => isSJField(m));
-            expect(util.memberAsStringWithType(methods[0])).toBe('m() : A');
-            expect(util.memberAsStringWithType(fields[0])).toBe('f : A');
+            expect(memberAsStringWithType(methods[0])).toBe('m() : A');
+            expect(memberAsStringWithType(fields[0])).toBe('f : A');
         });
     })
 
     function assertHierarchy(c: SJClass, expected: string) {
-        let hierarchy = util.classHierarchy(c);
+        let hierarchy = classHierarchy(c);
         let output: string[] = new Array;
         if (hierarchy.size == 0) {
             output.push('');
