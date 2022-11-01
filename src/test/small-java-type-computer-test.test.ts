@@ -19,7 +19,7 @@ describe('Small Java Type Computer', () => {
     });
 
     // TODO: this test has issues now 
-    it.skip('varRefType()', async () => {
+    it.todo('varRefType()', async () => {
         assertType('v', 'V');
     });
 

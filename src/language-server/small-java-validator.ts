@@ -18,7 +18,7 @@ export class SmallJavaValidationRegistry extends ValidationRegistry {
         const checks: ValidationChecks<SmallJavaAstType> = {
             SJClass: [
                 validator.checkClassHierarchy,
-                validator.checkMethodOverride,
+                // validator.checkMethodOverride,
             ],            
             SJProgram: [
                 validator.checkNoDuplicateClasses,

@@ -101,8 +101,6 @@ export class SmallJavaScopeComputation extends DefaultScopeComputation {
     //     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     //     return this.descriptions.createDescription(description.node!, name, document);
     // }
-
-// }
 }
 
 /**
